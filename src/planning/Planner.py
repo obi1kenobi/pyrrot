@@ -77,7 +77,7 @@ class Planner(object):
     def route(self, path):
         precondition(len(path) >= 2, "The path cannot have fewer than two locations")
 
-        from_locations = path[:-2]
+        from_locations = path[:-1]
         to_locations = path[1:]
         path_legs = zip(from_locations, to_locations)
         return chain.from_iterable([self.directions(leg[0], leg[1]) for leg in path_legs])
