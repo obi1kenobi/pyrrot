@@ -1,16 +1,23 @@
 from location import Location2D
 from src.util.preconditions import precondition, precondition_strings_equal
 from src.util.strings import pad_left, count_left_padding
+from itertools import permutations
+import shapely.geometry as geometry
 
 class Polygon(object):
     # name is a string not containing ":" or whitespace chars
-    # corners is a list of tuples of (x, y) coordinates
+    # corners is a list of Location2D objects
     def __init__(self, name, corners):
         assert ":" not in name
         assert " " not in name
         assert "\n" not in name
         self.name = name
-        self.corners = corners
+        points = [(p.x, p.y) for p in corners]
+        for perm in permutations(points):
+            self.shape = geometry.Polygon(perm)
+            if self.shape.is_valid:
+                self.shape = geometry.polygon.orient(self.shape)
+                break
 
     # writer is an IndentedWriter
     # this function makes the Polygon write itself as YAML into the writer
@@ -62,9 +69,8 @@ class Polygon(object):
             precondition(line.startswith("- ["), "Expected line %s to start with '- ['" % line)
             precondition(line.endswith("]"), "Expected line %s to end with ']'" % line)
 
-            args = line.strip('-').strip().strip('[').strip(']').split(',')
-            precondition(len(args) == 2, "Expected line %s to contain two comma-separated numbers" % line)
-            corners.append(Location2D(float(args[0]), float(args[1])))
+            arg = line.strip('-').strip().replace(',', ';')
+            corners.append(Location2D.parse(arg))
             next_line_index += 1
 
         return Polygon(name, corners), next_line_index
