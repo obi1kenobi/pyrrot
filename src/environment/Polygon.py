@@ -14,6 +14,7 @@ class Polygon(object):
         self.name = name
         points = [(p.x, p.y) for p in corners]
         for perm in permutations(points):
+            self.corners = perm
             self.shape = geometry.Polygon(perm)
             if self.shape.is_valid:
                 self.shape = geometry.polygon.orient(self.shape)
@@ -30,7 +31,7 @@ class Polygon(object):
 
         writer.indent()
         for corner in self.corners:
-            writer.write_line("- [%.3f, %.3f]" % (corner.x, corner.y))
+            writer.write_line("- [%.3f, %.3f]" % corner)
         writer.unindent()
 
         writer.unindent()
